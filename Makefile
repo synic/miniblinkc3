@@ -17,7 +17,7 @@
 ## along with this library.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-BINARY = miniblinkc3
+BINARY = miniblink
 
 LDSCRIPT = stm32f0.ld
 
