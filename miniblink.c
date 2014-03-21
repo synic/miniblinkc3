@@ -2,18 +2,13 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/timer.h>
 
-
-static void gpio_setup(void)
-{
+static void clock_setup(void) {
     rcc_clock_setup_in_hse_8mhz_out_48mhz();
-	rcc_periph_clock_enable(RCC_GPIOA);
+}
 
-
-    gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_OTYPE_PP, GPIO7);
-    gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_HIGH, GPIO7);
-    gpio_set_af(GPIOA, GPIO_AF1, GPIO7);
-
+static void timer_setup(void) {
     rcc_periph_clock_enable(RCC_TIM3);                  
+
     timer_reset(TIM3);
     timer_set_mode(TIM3, TIM_CR1_CKD_CK_INT, TIM_CR1_CMS_EDGE, TIM_CR1_DIR_UP);
     int prescaler = (uint16_t) ((48000000 / 2) / 21000000) - 1;
@@ -30,17 +25,23 @@ static void gpio_setup(void)
     timer_enable_counter(TIM3);
 }
 
-int main(void)
-{
+static void gpio_setup(void) {
+	rcc_periph_clock_enable(RCC_GPIOA);
+    gpio_mode_setup(GPIOA, GPIO_MODE_AF, GPIO_OTYPE_PP, GPIO7);
+    gpio_set_output_options(GPIOA, GPIO_OTYPE_PP, GPIO_OSPEED_HIGH, GPIO7);
+    gpio_set_af(GPIOA, GPIO_AF1, GPIO7);
+}
+
+int main(void) {
+    clock_setup();
+	gpio_setup();
+    timer_setup();
+
 	volatile int i;
     volatile int brightness = 0;
     volatile int up = 1;
 
-	gpio_setup();
-
-    /* Infinite loop */
-    while (1)  // Do not exit
-    {
+    while (1) {
         if (up) {
             brightness++;
         } else {
@@ -55,8 +56,8 @@ int main(void)
 
         timer_set_oc_value(TIM3, TIM_OC2, brightness);
 
-        for (i = 0; i < 2500; i++)
-            ;  // delay
+        for(i = 0; i < 2500; i++);
     }
+
 	return 0;
 }
